@@ -777,6 +777,7 @@ var PS = {};
   };
   var drawPlayer = function (ctx) {
       return function (player) {
+          var pts = getPlayerPoints(player);
           var drawPlayer$prime = function (v) {
               if (v.length === 3) {
                   return Data_Functor["void"](Control_Monad_Eff.functorEff)(function __do() {
@@ -791,10 +792,7 @@ var PS = {};
               };
               return Control_Applicative.pure(Control_Monad_Eff.applicativeEff)(Data_Unit.unit);
           };
-          return Data_Functor["void"](Control_Monad_Eff.functorEff)((function () {
-              var pts = getPlayerPoints(player);
-              return drawPlayer$prime(pts);
-          })());
+          return drawPlayer$prime(pts);
       };
   };
   var drawCoin = function (ctx) {
@@ -950,7 +948,7 @@ var PS = {};
                       return $foreign.requestAnimationFrame(loop)();
                   };
               };
-              throw new Error("Failed pattern match at Main line 179, column 8 - line 214, column 27: " + [ v.constructor.name ]);
+              throw new Error("Failed pattern match at Main line 178, column 8 - line 213, column 27: " + [ v.constructor.name ]);
           })())();
       };
   }));

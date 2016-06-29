@@ -18,44 +18,44 @@ screenSize :: C.Dimensions
 screenSize = { width : 800.0,
                height : 600.0 }
 
-type Point = {
-    x :: Number,
-    y :: Number
-}
+type Point =
+    { x :: Number
+    , y :: Number
+    }
 point :: Number -> Number -> Point
 point x y = { x, y }
 
-type Circle = {
-    x :: Number,
-    y :: Number,
-    r :: Number
-}
+type Circle =
+    { x :: Number
+    , y :: Number
+    , r :: Number
+    }
 circle :: Number -> Number -> Number -> Circle
 circle x y r = { x, y, r }
 
 circleContains :: Circle -> Point -> Boolean
 circleContains { x:cx, y:cy, r } { x:px, y:py } = ((px-cx) * (px-cx) + (py-cy) * (py-cy)) < r * r
 
-type InputState = {
-   up :: Boolean,
-   down :: Boolean,
-   left :: Boolean,
-   right :: Boolean
-}
+type InputState =
+    { up :: Boolean
+    , down :: Boolean
+    , left :: Boolean
+    , right :: Boolean
+    }
 initialInputState :: InputState
 initialInputState = { up : false,
                      down : false,
                      left : false,
                      right : false }
 
-type Player = {
-    x :: Number,
-    y :: Number,
-    vx :: Number,
-    vy :: Number,
-    angle :: Number,
-    rad :: Number
-}
+type Player =
+    { x :: Number
+    , y :: Number
+    , vx :: Number
+    , vy :: Number
+    , angle :: Number
+    , rad :: Number
+    }
 initialPlayer :: Player
 initialPlayer = { x : 100.0, y : 100.0, vx : 0.0, vy : 0.0, angle : 0.0, rad : 16.0 }
 
@@ -72,20 +72,20 @@ getPlayerPoints player =
         p3 = point ((cos a3) * r + x) ((sin a3) * r + y)
     in [p1, p2, p3]
 
-type Coin = {
-    x :: Number,
-    y :: Number
-}
+type Coin =
+    { x :: Number
+    , y :: Number
+    }
 newCoin :: forall e. C.Dimensions -> Eff ( random :: RANDOM | e ) Coin
 newCoin { width: w, height : h } = do
     x <- randomRange 0.0 w
     y <- randomRange 0.0 h
     pure { x, y }
 
-type GameState = {
-    player :: Player,
-    coin :: Coin
-}
+type GameState =
+    { player :: Player
+    , coin :: Coin
+    }
 initialGameState :: forall e. Eff ( random :: RANDOM | e ) GameState
 initialGameState = do
     coin <- newCoin screenSize
@@ -151,11 +151,10 @@ clearCanvas ctx = void do
     C.fillRect ctx { x : 0.0, y : 0.0, w : screenSize.width, h : screenSize.height }
 
 drawPlayer :: forall e. C.Context2D -> Player -> Eff ( canvas :: C.CANVAS | e ) Unit
-drawPlayer ctx player = void do
-    let pts = getPlayerPoints player
-    drawPlayer' pts
-    
+drawPlayer ctx player = drawPlayer' pts
     where
+        pts = getPlayerPoints player
+        
         drawPlayer' :: Array Point -> Eff ( canvas :: C.CANVAS | e ) Unit
         drawPlayer' [p1, p2, p3] = void do
             C.setFillStyle "#F00" ctx
