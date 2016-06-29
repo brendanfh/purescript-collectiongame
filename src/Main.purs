@@ -4,8 +4,10 @@ import Prelude
 import Control.Monad.Eff
 import Control.Monad.Eff.Console
 import Graphics.Canvas as C
+import Control.Monad.Eff.Random (randomRange, RANDOM)
 import Control.Monad.Eff.Ref (modifyRef, writeRef, readRef, newRef)
 import Data.Maybe (Maybe(Just))
+import Math (pi)
 import Partial.Unsafe (unsafePartial)
 
 foreign import requestAnimationFrame :: forall e. Eff ( canvas :: C.CANVAS | e ) Unit -> Eff ( canvas :: C.CANVAS | e ) Unit
@@ -15,28 +17,43 @@ screenSize :: C.Dimensions
 screenSize = { width : 800.0,
                height : 600.0 }
 
+type InputState = {
+   up :: Boolean,
+   down :: Boolean,
+   left :: Boolean,
+   right :: Boolean
+}
+initialInputState :: InputState
+initialInputState = { up : false,
+                     down : false,
+                     left : false,
+                     right : false }
+
 type Player = {
     x :: Number,
     y :: Number
 }
+initialPlayer :: Player
+initialPlayer = { x : 0.0, y : 0.0 }
 
-type InputState = {
-    up :: Boolean,
-    down :: Boolean,
-    left :: Boolean,
-    right :: Boolean
+type Coin = {
+    x :: Number,
+    y :: Number
 }
-initialInputState :: InputState
-initialInputState = { up : false,
-                      down : false,
-                      left : false,
-                      right : false }
+newCoin :: forall e. C.Dimensions -> Eff ( random :: RANDOM | e ) Coin
+newCoin { width: w, height : h } = do
+    x <- randomRange 0.0 w
+    y <- randomRange 0.0 h
+    pure { x, y }
 
 type GameState = {
-    player :: Player
+    player :: Player,
+    coin :: Coin
 }
-initialGameState :: GameState
-initialGameState = { player : { x : 0.0, y : 0.0 }}
+initialGameState :: forall e. Eff ( random :: RANDOM | e ) GameState
+initialGameState = do
+    coin <- newCoin screenSize
+    pure { player : initialPlayer, coin }
 
 update :: InputState -> GameState -> GameState
 update inputs gs@{ player } =
@@ -62,6 +79,12 @@ drawPlayer ctx { x, y } = void do
     C.setFillStyle "#F00" ctx
     C.fillRect ctx { x, y, w : 32.0, h : 32.0 }
 
+drawCoin :: forall e. C.Context2D -> Coin -> Eff ( canvas :: C.CANVAS | e ) Unit
+drawCoin ctx { x, y } = void do
+    C.setFillStyle "#BB2" ctx
+    C.arc ctx { x, y, r : 16.0, start : 0.0, end : 2.0 * pi }
+    C.fill ctx
+
 main :: Eff _ Unit
 main = void $ unsafePartial $ do
     Just canvas <- C.getCanvasElementById "gamecanvas"
@@ -69,7 +92,8 @@ main = void $ unsafePartial $ do
 
     ctx <- C.getContext2D canvas
 
-    stateRef <- newRef initialGameState
+    iState <- initialGameState
+    stateRef <- newRef iState
     inputRef <- newRef initialInputState
 
     onKeyChange 87 (\pressed -> void do
@@ -92,6 +116,7 @@ main = void $ unsafePartial $ do
 
             clearCanvas ctx
             drawPlayer ctx nextState.player
+            drawCoin ctx nextState.coin
 
             writeRef stateRef nextState
             requestAnimationFrame loop

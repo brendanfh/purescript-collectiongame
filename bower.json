@@ -14,6 +14,7 @@
     "purescript-canvas": "^1.0.0",
     "purescript-refs": "^1.0.0",
     "purescript-arrays": "^1.0.0",
-    "purescript-console": "^1.0.0"
+    "purescript-console": "^1.0.0",
+    "purescript-random": "^1.0.0"
   }
 }
